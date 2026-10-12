@@ -77,3 +77,4 @@ npm run test:concurrency
 - [Deployment & Load Balancing](file:///c:/Users/admin/OneDrive/coding/03-DEVLOPEMENT/personal/mp-6/docs/DEPLOYMENT.md)
 - [Testing & Concurrency Verification](file:///c:/Users/admin/OneDrive/coding/03-DEVLOPEMENT/personal/mp-6/docs/TESTING.md)
 - [Implementation Backlog](file:///c:/Users/admin/OneDrive/coding/03-DEVLOPEMENT/personal/mp-6/docs/IMPLEMENTATION_PLAN.md)
+- [Master Technical Interview Defense Guide](file:///c:/Users/admin/OneDrive/coding/03-DEVLOPEMENT/personal/mp-6/docs/INTERVIEW_DEFENSE_GUIDE.md)

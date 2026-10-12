@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { analytics } from './analytics';
+import { telemetry } from './telemetry';
 
 const ROUTE_META = {
   '/': {
@@ -78,6 +78,6 @@ export const usePageMetadata = () => {
     }
     descTag.setAttribute('content', meta.description);
 
-    analytics.trackPageView(path);
+    telemetry.trackPageView(path);
   }, [location.pathname]);
 };

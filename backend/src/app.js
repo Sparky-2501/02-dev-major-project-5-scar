@@ -219,11 +219,11 @@ app.post('/api/v1/checkout/purchase', (req, res, next) => {
   }
 });
 
-// Analytics tracking endpoint
-app.post('/api/v1/analytics/events', (req, res) => {
+// Telemetry & metrics tracking endpoints
+app.post(['/api/v1/telemetry/metrics', '/api/v1/analytics/events'], (req, res) => {
   const event = req.body;
   if (event && event.type) {
-    logger.debug({ eventType: event.type, pathname: event.pathname }, 'Client analytics logged');
+    logger.debug({ eventType: event.type, pathname: event.pathname }, 'Client telemetry logged');
   }
   res.status(204).end();
 });

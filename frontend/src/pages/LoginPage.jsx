@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, User, ArrowRight, Sparkles, ShieldAlert, CheckCircle2, ShieldCheck } from 'lucide-react';
-import { analytics } from '../utils/analytics';
+import { telemetry } from '../utils/telemetry';
 
 export const LoginPage = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -72,21 +72,21 @@ export const LoginPage = () => {
       try {
         const res = await register({ name: name.trim(), email: email.trim(), password });
         if (res.success) {
-          analytics.trackEvent('auth_register_success', { email: email.trim() });
+          telemetry.trackEvent('auth_register_success', { email: email.trim() });
           setSuccessMsg('Account created successfully! Welcome to SCAR.');
           setTimeout(() => {
             navigate('/catalog');
           }, 800);
         }
       } catch (err) {
-        analytics.trackEvent('auth_register_failed', { error: err.message });
+        telemetry.trackEvent('auth_register_failed', { error: err.message });
         setError(err.message || 'Failed to create account. Please try again.');
       }
     } else {
       try {
         const res = await login(email.trim(), password);
         if (res.success) {
-          analytics.trackEvent('auth_login_success', { role: res.user.role });
+          telemetry.trackEvent('auth_login_success', { role: res.user.role });
           setSuccessMsg(`Signed in successfully as ${res.user.name}!`);
           setTimeout(() => {
             if (res.user.role === 'admin') {
@@ -99,7 +99,7 @@ export const LoginPage = () => {
           }, 500);
         }
       } catch (err) {
-        analytics.trackEvent('auth_login_failed', { email: email.trim() });
+        telemetry.trackEvent('auth_login_failed', { email: email.trim() });
         setError('Invalid email or password. Please verify your credentials.');
       }
     }

@@ -21,8 +21,8 @@ export const DEMO_PRODUCTS = [
     rating: 4.8,
     reviewsCount: 142,
     description: 'Tailored from heavyweight Italian merino wool with a relaxed silhouette and notched lapels. Designed for modern metropolitan winters.',
-    images: ['/images/products/men/men_1.svg', '/images/products/men/men_2.svg'],
-    thumbnail: '/images/products/men/men_1.svg',
+    images: ['/images/products/men/marwood-cashmere-overcoat-1.jpg', '/images/products/men/men_2.svg'],
+    thumbnail: '/images/products/men/marwood-cashmere-overcoat-1.jpg',
     tags: ['coat', 'wool', 'winter', 'luxury', 'men'],
     variants: [
       { sku: 'M1-BLK-M', size: 'M', color: 'Obsidian Black', stock: 12, price: 8999 },
@@ -41,8 +41,8 @@ export const DEMO_PRODUCTS = [
     rating: 4.6,
     reviewsCount: 88,
     description: 'Custom 450 GSM organic loopback terry fabric with double-stitched kangaroo pocket and custom aglets.',
-    images: ['/images/products/men/men_2.svg'],
-    thumbnail: '/images/products/men/men_2.svg',
+    images: ['/images/products/men/Y26025.webp'],
+    thumbnail: '/images/products/men/Y26025.webp',
     tags: ['hoodie', 'casual', 'streetwear', 'men'],
     variants: [
       { sku: 'M2-GRY-M', size: 'M', color: 'Slate Grey', stock: 25, price: 3499 },
@@ -60,8 +60,8 @@ export const DEMO_PRODUCTS = [
     rating: 4.7,
     reviewsCount: 52,
     description: 'Double front pleats with an adjustable side buckle and sharp crease line. Ideal for formal-casual crossover.',
-    images: ['/images/products/men/men_3.svg'],
-    thumbnail: '/images/products/men/men_3.svg',
+    images: ['/images/products/men/-473Wx593H-700540721-grey-MODEL.jxl'],
+    thumbnail: '/images/products/men/-473Wx593H-700540721-grey-MODEL.jxl',
     tags: ['trousers', 'formal', 'tailored', 'men'],
     variants: [
       { sku: 'M3-NVY-32', size: '32', color: 'Deep Navy', stock: 15, price: 4999 },

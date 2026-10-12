@@ -29,7 +29,18 @@ export const CampaignProvider = ({ children }) => {
   const [products, setProducts] = useState(() => {
     try {
       const saved = localStorage.getItem('scar_dynamic_products');
-      return saved ? JSON.parse(saved) : DEMO_PRODUCTS;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Sync first 3 products if they were using older default SVG images
+        return parsed.map((p) => {
+          const fresh = DEMO_PRODUCTS.find((dp) => dp.id === p.id);
+          if (fresh && fresh.thumbnail !== p.thumbnail && p.thumbnail.endsWith('.svg')) {
+            return { ...p, thumbnail: fresh.thumbnail, images: fresh.images };
+          }
+          return p;
+        });
+      }
+      return DEMO_PRODUCTS;
     } catch {
       return DEMO_PRODUCTS;
     }

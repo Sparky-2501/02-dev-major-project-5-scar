@@ -1,0 +1,96 @@
+// Initial seed promotional campaigns
+export const INITIAL_CAMPAIGNS = [
+  {
+    id: 'camp_elec_fest',
+    name: 'Electronics Audio & Studio Festival',
+    description: '15% discount across studio acoustics, wireless ANC, and lighting.',
+    headline: 'SCAR ACOUSTICS FESTIVAL — 15% OFF ALL STUDIO HARDWARE',
+    bannerImage: '/images/products/electronics/electronics_1.svg',
+    mobileBannerImage: '/images/products/electronics/electronics_2.svg',
+    type: 'category', // 'all' | 'category' | 'products' | 'banner_only' | 'marquee'
+    targetCategory: 'electronics',
+    targetProductSkus: ['E1-MBLK', 'E1-SLVR', 'E2-ALUM'],
+    discountType: 'percentage', // 'percentage' | 'fixed'
+    discountValue: 15,
+    maxDiscount: 3000,
+    minOrderValue: 2000,
+    startDate: new Date(Date.now() - 3600000 * 24).toISOString(), // started yesterday
+    endDate: new Date(Date.now() + 3600000 * 24 * 7).toISOString(), // ends in 7 days
+    status: 'active', // 'draft' | 'pending_approval' | 'scheduled' | 'active' | 'paused' | 'expired'
+    priority: 10,
+    ctaText: 'Explore Acoustics',
+    ctaUrl: '/catalog?category=electronics',
+    marqueeEnabled: true,
+    marqueeText: '⚡ LIMITED TIME: 15% OFF ON PREMIUM AUDIO & DESK LIGHTING USING CODE SCAR15',
+    createdBy: 'Priya Sharma (Manager)',
+    approvedBy: 'System Administrator',
+    impressions: 48,
+    clicks: 12,
+  },
+  {
+    id: 'camp_winter_outerwear',
+    name: 'Winter Tailoring & Outerwear Showcase',
+    description: '10% off high-density merino and cashmere apparel.',
+    headline: 'ELEVATED WINTER ARCHITECTURE — 10% OFF MERINO COATS',
+    bannerImage: '/images/products/men/men_1.svg',
+    mobileBannerImage: '/images/products/men/men_2.svg',
+    type: 'category',
+    targetCategory: 'men',
+    targetProductSkus: ['M1-BLK-M', 'M1-BLK-L', 'M1-BLK-XL'],
+    discountType: 'percentage',
+    discountValue: 10,
+    maxDiscount: 2000,
+    minOrderValue: 5000,
+    startDate: new Date(Date.now() - 3600000 * 12).toISOString(),
+    endDate: new Date(Date.now() + 3600000 * 24 * 14).toISOString(),
+    status: 'active',
+    priority: 8,
+    ctaText: 'Shop Outerwear',
+    ctaUrl: '/catalog?category=men',
+    marqueeEnabled: false,
+    marqueeText: '',
+    createdBy: 'System Administrator',
+    approvedBy: 'System Administrator',
+    impressions: 34,
+    clicks: 7,
+  }
+];
+
+export const INITIAL_AUDIT_LOGS = [
+  {
+    id: 'log_01',
+    actorId: 'usr_admin_01',
+    actorName: 'System Administrator',
+    actorRole: 'admin',
+    actionType: 'CAMPAIGN_ACTIVATION',
+    resourceId: 'camp_elec_fest',
+    resourceType: 'campaign',
+    timestamp: new Date(Date.now() - 3600000 * 5).toISOString(),
+    status: 'SUCCESS',
+    details: 'Activated Electronics Audio & Studio Festival with 15% discount.',
+  },
+  {
+    id: 'log_02',
+    actorId: 'usr_manager_01',
+    actorName: 'Priya Sharma',
+    actorRole: 'manager',
+    actionType: 'PRODUCT_UPLOAD',
+    resourceId: 'prod_m_1',
+    resourceType: 'product',
+    timestamp: new Date(Date.now() - 3600000 * 12).toISOString(),
+    status: 'SUCCESS',
+    details: 'Created SCAR Obsidian Merino Overcoat with 3 variant matrices.',
+  },
+  {
+    id: 'log_03',
+    actorId: 'usr_manager_01',
+    actorName: 'Priya Sharma',
+    actorRole: 'manager',
+    actionType: 'CAMPAIGN_SUBMIT_APPROVAL',
+    resourceId: 'camp_elec_fest',
+    resourceType: 'campaign',
+    timestamp: new Date(Date.now() - 3600000 * 15).toISOString(),
+    status: 'SUCCESS',
+    details: 'Submitted campaign Electronics Audio & Studio Festival for admin approval.',
+  }
+];

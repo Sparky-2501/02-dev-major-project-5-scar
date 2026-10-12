@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Search, User, Menu, X, ShieldCheck, Heart } from 'lucide-react';
+import { ShoppingBag, Search, User, Menu, X, ShieldCheck, Heart, LayoutDashboard } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { DEMO_CATEGORIES } from '../../data/catalog';
@@ -10,7 +10,7 @@ export const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { totalQuantity, setIsOpen } = useCart();
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, isManager, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleSearchSubmit = (e) => {
@@ -26,11 +26,16 @@ export const Navbar = () => {
       {/* Top Banner */}
       <div className="bg-gray-900 px-4 py-1.5 text-center text-xs font-medium text-white flex items-center justify-center gap-2">
         <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span>SCAR Autumn/Winter Edit &mdash; Free Shipping on Orders Over ₹1,999</span>
+        <span>SCAR Autumn/Winter Edit &mdash; Free Express Shipping Over ₹1,999</span>
         {isAdmin && (
-          <span className="ml-2 bg-orange-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
-            Admin Mode
-          </span>
+          <Link to="/admin" className="ml-2 bg-orange-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider hover:bg-orange-500">
+            Admin Suite
+          </Link>
+        )}
+        {isManager && !isAdmin && (
+          <Link to="/manager" className="ml-2 bg-blue-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider hover:bg-blue-500">
+            Manager Suite
+          </Link>
         )}
       </div>
 
@@ -95,7 +100,7 @@ export const Navbar = () => {
           {user ? (
             <div className="flex items-center gap-2">
               <Link
-                to={isAdmin ? "/admin" : "/profile"}
+                to={isAdmin ? "/admin" : isManager ? "/manager" : "/profile"}
                 className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:text-brand-orange p-1.5"
               >
                 <User className="w-4 h-4 text-brand-orange" />
@@ -171,6 +176,15 @@ export const Navbar = () => {
               className="block py-2 text-sm font-bold text-brand-orange"
             >
               Admin Dashboard
+            </Link>
+          )}
+          {isManager && !isAdmin && (
+            <Link
+              to="/manager"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 text-sm font-bold text-blue-600"
+            >
+              Manager Dashboard
             </Link>
           )}
         </div>

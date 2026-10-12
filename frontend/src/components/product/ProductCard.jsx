@@ -1,21 +1,30 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ShoppingBag } from 'lucide-react';
+import { Star, ShoppingBag, Tag } from 'lucide-react';
 import { formatCurrency } from '../../utils/cn';
 import { Badge } from '../common/Badge';
 import { useCart } from '../../context/CartContext';
+import { useCampaigns } from '../../context/CampaignContext';
 
 export const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
+  const { getProductDiscount } = useCampaigns();
+  
+  const discountInfo = getProductDiscount(product);
   const primaryVariant = product.variants?.[0];
   const isLowStock = primaryVariant && primaryVariant.stock <= 2 && primaryVariant.stock > 0;
   const isOutOfStock = primaryVariant && primaryVariant.stock === 0;
+
+  // Active authoritative price
+  const displayPrice = discountInfo ? discountInfo.finalPrice : product.price;
+  const originalPrice = discountInfo ? discountInfo.originalPrice : product.originalPrice;
 
   const handleQuickAdd = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!isOutOfStock) {
-      addToCart(product, primaryVariant, 1);
+      // Pass authoritative price to cart
+      addToCart({ ...product, price: displayPrice }, primaryVariant, 1);
     }
   };
 
@@ -32,9 +41,15 @@ export const ProductCard = ({ product }) => {
 
         {/* Floating Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-          {product.originalPrice && (
+          {discountInfo && (
+            <Badge variant="brand" size="sm" className="bg-brand-orange text-white shadow-sm flex items-center gap-1">
+              <Tag className="w-3 h-3" />
+              PROMO: {discountInfo.discountPercent}% OFF
+            </Badge>
+          )}
+          {!discountInfo && originalPrice && (
             <Badge variant="brand" size="sm">
-              SAVE {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+              SAVE {Math.round(((originalPrice - displayPrice) / originalPrice) * 100)}%
             </Badge>
           )}
           {isLowStock && (
@@ -83,11 +98,11 @@ export const ProductCard = ({ product }) => {
         <div className="mt-3 pt-3 border-t border-gray-100 dark:border-scar-800 flex items-center justify-between">
           <div className="flex items-baseline gap-2">
             <span className="text-base font-extrabold text-gray-900 dark:text-white">
-              {formatCurrency(product.price)}
+              {formatCurrency(displayPrice)}
             </span>
-            {product.originalPrice && (
+            {originalPrice && originalPrice > displayPrice && (
               <span className="text-xs text-gray-400 line-through">
-                {formatCurrency(product.originalPrice)}
+                {formatCurrency(originalPrice)}
               </span>
             )}
           </div>

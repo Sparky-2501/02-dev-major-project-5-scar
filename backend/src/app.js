@@ -79,7 +79,7 @@ app.post('/api/v1/auth/login', async (req, res, next) => {
       });
     }
 
-    const user = userService.findByEmail(email);
+    const user = await userService.findByEmail(email);
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -106,7 +106,7 @@ app.post('/api/v1/auth/login', async (req, res, next) => {
   }
 });
 
-app.post('/api/v1/auth/register', (req, res, next) => {
+app.post('/api/v1/auth/register', async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
@@ -116,7 +116,7 @@ app.post('/api/v1/auth/register', (req, res, next) => {
       });
     }
 
-    const newUser = userService.createUser({ name, email, password, role: 'customer' });
+    const newUser = await userService.createUser({ name, email, password, role: 'customer' });
     res.status(201).json({
       success: true,
       message: 'Account registered successfully.',
@@ -127,7 +127,7 @@ app.post('/api/v1/auth/register', (req, res, next) => {
   }
 });
 
-app.put('/api/v1/auth/profile', (req, res, next) => {
+app.put('/api/v1/auth/profile', async (req, res, next) => {
   try {
     const { id, name, phone, address } = req.body;
     if (!id) {
@@ -137,7 +137,7 @@ app.put('/api/v1/auth/profile', (req, res, next) => {
       });
     }
 
-    const updated = userService.updateProfile(id, { name, phone, address });
+    const updated = await userService.updateProfile(id, { name, phone, address });
     res.json({
       success: true,
       message: 'Profile updated successfully.',
@@ -147,6 +147,7 @@ app.put('/api/v1/auth/profile', (req, res, next) => {
     next(err);
   }
 });
+
 app.post('/api/v1/upload', upload.single('image'), async (req, res, next) => {
   try {
     if (!req.file) {

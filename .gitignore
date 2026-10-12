@@ -67,3 +67,10 @@ build/
 # OS metadata
 .DS_Store
 Thumbs.db
+
+
+# AI / Agent IDE metadata
+.agent/
+.agents/
+.gemini/
+.gsd/

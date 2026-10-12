@@ -55,18 +55,70 @@ const initialUsers = [
   },
 ];
 
+import mongoose from 'mongoose';
+import { User } from '../models/User.js';
+
 class UserService {
   constructor() {
     this.users = new Map();
     initialUsers.forEach((u) => this.users.set(u.email.toLowerCase(), { ...u }));
   }
 
-  findByEmail(email) {
-    if (!email) return null;
-    return this.users.get(email.toLowerCase()) || null;
+  isDbConnected() {
+    return mongoose.connection.readyState === 1;
   }
 
-  findById(id) {
+  async findByEmail(email) {
+    if (!email) return null;
+    const normalized = email.toLowerCase();
+
+    if (this.isDbConnected()) {
+      try {
+        const userDoc = await User.findOne({ email: normalized });
+        if (userDoc) {
+          return {
+            id: userDoc._id.toString(),
+            name: userDoc.name,
+            email: userDoc.email,
+            passwordHash: userDoc.password,
+            role: userDoc.role,
+            permissions: userDoc.permissions || [],
+            phone: userDoc.phone || '',
+            address: userDoc.address || {},
+            createdAt: userDoc.createdAt,
+          };
+        }
+      } catch (err) {
+        // Fallback to memory
+      }
+    }
+    return this.users.get(normalized) || null;
+  }
+
+  async findById(id) {
+    if (this.isDbConnected()) {
+      try {
+        if (mongoose.Types.ObjectId.isValid(id)) {
+          const userDoc = await User.findById(id);
+          if (userDoc) {
+            return {
+              id: userDoc._id.toString(),
+              name: userDoc.name,
+              email: userDoc.email,
+              passwordHash: userDoc.password,
+              role: userDoc.role,
+              permissions: userDoc.permissions || [],
+              phone: userDoc.phone || '',
+              address: userDoc.address || {},
+              createdAt: userDoc.createdAt,
+            };
+          }
+        }
+      } catch (err) {
+        // Fallback to memory
+      }
+    }
+
     for (const user of this.users.values()) {
       if (user.id === id) return user;
     }
@@ -78,8 +130,48 @@ class UserService {
     return bcrypt.compare(password, user.passwordHash);
   }
 
-  createUser({ name, email, password, role = 'customer' }) {
+  async createUser({ name, email, password, role = 'customer' }) {
     const normalizedEmail = email.toLowerCase();
+
+    if (this.isDbConnected()) {
+      const existing = await User.findOne({ email: normalizedEmail });
+      if (existing) {
+        const err = new Error('User with this email already exists.');
+        err.statusCode = 400;
+        throw err;
+      }
+
+      const permissions = role === 'admin' ? initialUsers[0].permissions : role === 'manager' ? initialUsers[1].permissions : [];
+      const userDoc = await User.create({
+        name,
+        email: normalizedEmail,
+        password, // Handled by User schema pre-save hook
+        role,
+        permissions,
+        phone: '',
+        address: { street: '', city: '', state: '', postalCode: '', country: 'India' },
+      });
+
+      const userObj = {
+        id: userDoc._id.toString(),
+        name: userDoc.name,
+        email: userDoc.email,
+        role: userDoc.role,
+        permissions: userDoc.permissions,
+        phone: userDoc.phone,
+        address: userDoc.address,
+        createdAt: userDoc.createdAt,
+      };
+
+      // Also cache in memory map
+      this.users.set(normalizedEmail, {
+        ...userObj,
+        passwordHash: userDoc.password,
+      });
+
+      return userObj;
+    }
+
     if (this.users.has(normalizedEmail)) {
       const err = new Error('User with this email already exists.');
       err.statusCode = 400;
@@ -102,8 +194,36 @@ class UserService {
     return this.sanitizeUser(newUser);
   }
 
-  updateProfile(id, updates) {
-    const user = this.findById(id);
+  async updateProfile(id, updates) {
+    if (this.isDbConnected() && mongoose.Types.ObjectId.isValid(id)) {
+      const userDoc = await User.findById(id);
+      if (userDoc) {
+        if (updates.name) userDoc.name = updates.name;
+        if (updates.phone !== undefined) userDoc.phone = updates.phone;
+        if (updates.address) userDoc.address = { ...userDoc.address, ...updates.address };
+        await userDoc.save();
+
+        const safeUser = {
+          id: userDoc._id.toString(),
+          name: userDoc.name,
+          email: userDoc.email,
+          role: userDoc.role,
+          permissions: userDoc.permissions,
+          phone: userDoc.phone,
+          address: userDoc.address,
+          createdAt: userDoc.createdAt,
+        };
+
+        this.users.set(userDoc.email.toLowerCase(), {
+          ...safeUser,
+          passwordHash: userDoc.password,
+        });
+
+        return safeUser;
+      }
+    }
+
+    const user = await this.findById(id);
     if (!user) {
       const err = new Error('User not found.');
       err.statusCode = 404;
@@ -124,5 +244,6 @@ class UserService {
     return safeUser;
   }
 }
+
 
 export const userService = new UserService();

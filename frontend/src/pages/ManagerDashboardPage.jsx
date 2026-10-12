@@ -24,9 +24,20 @@ import {
 } from 'lucide-react';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
+import { AccessRestricted } from '../components/common/AccessRestricted';
 
 export const ManagerDashboardPage = () => {
   const { user, hasPermission, isAdmin } = useAuth();
+
+  if (!user || (!isAdmin && user.role !== 'manager')) {
+    return (
+      <AccessRestricted
+        title="Manager Studio Clearance Required"
+        message="The SCAR Merchant Studio is reserved for store managers. Please sign in with manager authorization to upload products, configure sales campaigns, and inspect analytics."
+        requiredRole="manager"
+      />
+    );
+  }
   const {
     products,
     campaigns,

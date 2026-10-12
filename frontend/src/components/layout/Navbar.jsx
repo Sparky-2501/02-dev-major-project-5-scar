@@ -100,8 +100,9 @@ export const Navbar = () => {
           {user ? (
             <div className="flex items-center gap-2">
               <Link
-                to={isAdmin ? "/admin" : isManager ? "/manager" : "/profile"}
+                to="/profile"
                 className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:text-brand-orange p-1.5"
+                title="Account Profile"
               >
                 <User className="w-4 h-4 text-brand-orange" />
                 <span className="hidden sm:inline">{user.name.split(' ')[0]}</span>
@@ -169,6 +170,15 @@ export const Navbar = () => {
               {cat.name}
             </Link>
           ))}
+          {user && (
+            <Link
+              to="/profile"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 hover:text-brand-orange"
+            >
+              My Profile
+            </Link>
+          )}
           {isAdmin && (
             <Link
               to="/admin"

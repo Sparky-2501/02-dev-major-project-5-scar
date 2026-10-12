@@ -7,6 +7,7 @@ import { config } from './config/env.js';
 import { logger } from './utils/logger.js';
 import { correlationMiddleware, sanitizeMongoInput, errorHandler } from './middlewares/common.js';
 import { inventoryService } from './services/inventoryService.js';
+import { userService } from './services/userService.js';
 import { SEED_CATALOG } from './data/seedCatalog.js';
 import { uploadToCloudinary, isCloudinaryConfigured } from './config/cloudinary.js';
 
@@ -59,7 +60,85 @@ app.get('/api/v1/health', (req, res) => {
   });
 });
 
-// Cloudinary Image Upload Endpoint
+// Auth Endpoints: Register, Login, Me, Update Profile
+app.post('/api/v1/auth/login', async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_CREDENTIALS', message: 'Email and password are required.' },
+      });
+    }
+
+    const user = userService.findByEmail(email);
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'AUTH_FAILED', message: 'Invalid email or password.' },
+      });
+    }
+
+    const isMatch = await userService.verifyPassword(user, password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'AUTH_FAILED', message: 'Invalid email or password.' },
+      });
+    }
+
+    const safeUser = userService.sanitizeUser(user);
+    res.json({
+      success: true,
+      message: 'Login successful.',
+      data: { user: safeUser },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/api/v1/auth/register', (req, res, next) => {
+  try {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Name, email, and password are required.' },
+      });
+    }
+
+    const newUser = userService.createUser({ name, email, password, role: 'customer' });
+    res.status(201).json({
+      success: true,
+      message: 'Account registered successfully.',
+      data: { user: newUser },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/v1/auth/profile', (req, res, next) => {
+  try {
+    const { id, name, phone, address } = req.body;
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'ID_REQUIRED', message: 'User id is required to update profile.' },
+      });
+    }
+
+    const updated = userService.updateProfile(id, { name, phone, address });
+    res.json({
+      success: true,
+      message: 'Profile updated successfully.',
+      data: { user: updated },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
 app.post('/api/v1/upload', upload.single('image'), async (req, res, next) => {
   try {
     if (!req.file) {

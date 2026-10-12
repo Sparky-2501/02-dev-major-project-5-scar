@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Truck, RefreshCw, Headphones } from 'lucide-react';
+import { ShieldCheck, Truck, RefreshCw, Headphones, Heart } from 'lucide-react';
 
 export const Footer = () => {
   return (
-    <footer className="bg-scar-900 text-gray-300 border-t border-scar-800">
+    <footer className="bg-scar-900 text-gray-300 border-t border-scar-800 font-satoshi">
       {/* Service Highlights */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 border-b border-scar-800/80">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center md:text-left">
@@ -48,23 +48,19 @@ export const Footer = () => {
       </div>
 
       {/* Main Footer Links */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
-        <div className="col-span-2">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="col-span-1 sm:col-span-2">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg bg-brand-orange flex items-center justify-center text-white font-black text-sm">
+            <div className="w-8 h-8 rounded-lg bg-brand-orange flex items-center justify-center text-white font-black text-sm">
               S
             </div>
             <span className="text-2xl font-black tracking-tighter text-white">
               SCAR<span className="text-brand-orange">.</span>
             </span>
           </div>
-          <p className="text-xs text-gray-400 leading-relaxed max-w-sm mb-4">
+          <p className="text-xs text-gray-400 leading-relaxed max-w-md mb-4">
             SCAR is a high-concurrency modern retail platform combining luxury craftsmanship, intelligent personalization, and rock-solid transactional engineering.
           </p>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-scar-800 text-[11px] font-semibold text-emerald-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            Production Demo Environment
-          </div>
         </div>
 
         <div>
@@ -78,28 +74,48 @@ export const Footer = () => {
         </div>
 
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">Architecture</h4>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">Creator & Legal</h4>
           <ul className="space-y-2 text-xs">
-            <li><Link to="/admin" className="hover:text-white transition-colors">Admin Dashboard</Link></li>
-            <li><a href="/api/v1/health" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">API Health Check</a></li>
-            <li><span className="text-gray-400">Atomic Stock Locks</span></li>
-            <li><span className="text-gray-400">NGINX Multi-Instance</span></li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">Security & Trust</h4>
-          <ul className="space-y-2 text-xs text-gray-400">
-            <li>Argon2id Salted Hashing</li>
-            <li>Zero Overselling Guarantee</li>
-            <li>Idempotency Keys</li>
-            <li>Safe Sandbox Payments</li>
+            <li>
+              <Link to="/privacy" className="hover:text-white transition-colors text-emerald-400 font-semibold">
+                Privacy Policy & Disclaimer
+              </Link>
+            </li>
+            <li>
+              <Link to="/creator" className="hover:text-white transition-colors text-[#6C5CE7] font-semibold">
+                About the Creator
+              </Link>
+            </li>
+            <li>
+              <Link to="/profile" className="hover:text-white transition-colors">
+                User Profile
+              </Link>
+            </li>
+            <li>
+              <a
+                href="mailto:prathamesh.shelke@example.com?subject=Custom%20Web%20Design%20Inquiry"
+                className="hover:text-white transition-colors text-amber-400"
+              >
+                Hire for Custom Design
+              </a>
+            </li>
           </ul>
         </div>
       </div>
 
-      <div className="border-t border-scar-800 py-6 text-center text-xs text-gray-500">
-        <p>&copy; {new Date().getFullYear()} SCAR Retail Technologies Inc. All rights reserved.</p>
+      {/* Bottom Bar: Left 'Made with love by Prathamesh Shelke' & Right '© 2026 SCAR Retail Technologies Inc.' */}
+      <div className="border-t border-scar-800 py-6 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-400">
+          <div className="flex items-center gap-1.5 order-2 sm:order-1">
+            <span>Made with love by</span>
+            <Link to="/creator" className="font-bold text-white hover:text-brand-orange underline underline-offset-2 transition-colors">
+              Prathamesh Shelke
+            </Link>
+          </div>
+          <div className="order-1 sm:order-2 text-right">
+            <p>&copy; 2026 SCAR Retail Technologies Inc. All rights reserved.</p>
+          </div>
+        </div>
       </div>
     </footer>
   );

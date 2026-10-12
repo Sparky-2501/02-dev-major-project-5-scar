@@ -51,44 +51,119 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setIsLoading(true);
     try {
-      // 1. Admin login
-      if (email === 'admin@scar.local' && password === 'AdminSecurePassword123!') {
+      // 1. Try real backend API first
+      try {
+        const response = await fetch('/api/v1/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const resData = await response.json();
+        if (response.ok && resData.success && resData.data?.user) {
+          setUser(resData.data.user);
+          return { success: true, user: resData.data.user };
+        }
+      } catch (networkErr) {
+        // Fall back to client demo verification if server is unreachable
+      }
+
+      // 2. Local resilient fallback check
+      const normalized = email.toLowerCase().trim();
+      if (normalized === 'admin@scar.local' && password === 'AdminSecurePassword123!') {
         const adminUser = {
           id: 'usr_admin_01',
-          name: 'System Administrator',
+          name: 'Prathamesh Shelke (Admin)',
           email: 'admin@scar.local',
           role: 'admin',
           permissions: ALL_PERMISSIONS,
+          phone: '+91 98765 00001',
+          address: { street: 'HQ Tower, Cyber City', city: 'Mumbai', state: 'Maharashtra', postalCode: '400001' },
         };
         setUser(adminUser);
         return { success: true, user: adminUser };
       }
 
-      // 2. Manager login (demo preset)
-      if (email === 'manager@scar.local' && password === 'ManagerSecurePassword123!') {
+      if (normalized === 'manager@scar.local' && password === 'ManagerSecurePassword123!') {
         const managerUser = {
           id: 'usr_manager_01',
-          name: 'Priya Sharma (Catalog & Growth Manager)',
+          name: 'Priya Sharma (Catalog Manager)',
           email: 'manager@scar.local',
           role: 'manager',
-          permissions: MANAGER_PRESET_PERMISSIONS, // Cannot publish directly unless granted
+          permissions: MANAGER_PRESET_PERMISSIONS,
+          phone: '+91 98765 00002',
+          address: { street: 'Design Studio 4B', city: 'Bengaluru', state: 'Karnataka', postalCode: '560001' },
         };
         setUser(managerUser);
         return { success: true, user: managerUser };
       }
 
-      // 3. Customer demo login
-      const customerUser = {
-        id: 'usr_cust_' + Math.random().toString(36).substring(2, 9),
-        name: email.split('@')[0].toUpperCase(),
-        email,
-        role: 'customer',
-        permissions: [],
-      };
-      setUser(customerUser);
-      return { success: true, user: customerUser };
+      if (normalized === 'user@gmail.com' && password === 'user') {
+        const demoCustomer = {
+          id: 'usr_demo_user',
+          name: 'Demo Customer',
+          email: 'user@gmail.com',
+          role: 'customer',
+          permissions: [],
+          phone: '+91 98765 43210',
+          address: { street: 'Flat 402, Skyline Residency, Ring Road', city: 'Bengaluru', state: 'Karnataka', postalCode: '560103' },
+        };
+        setUser(demoCustomer);
+        return { success: true, user: demoCustomer };
+      }
+
+      throw new Error('Invalid email or password.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const register = async ({ name, email, password }) => {
+    setIsLoading(true);
+    try {
+      try {
+        const res = await fetch('/api/v1/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password }),
+        });
+        const data = await res.json();
+        if (res.ok && data.success && data.data?.user) {
+          setUser(data.data.user);
+          return { success: true, user: data.data.user };
+        }
+      } catch (e) {
+        // Fallback
+      }
+
+      const localNewUser = {
+        id: `usr_${Date.now().toString(36)}`,
+        name,
+        email: email.toLowerCase().trim(),
+        role: 'customer',
+        permissions: [],
+        phone: '',
+        address: { street: '', city: '', state: '', postalCode: '' },
+      };
+      setUser(localNewUser);
+      return { success: true, user: localNewUser };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateProfile = async (updates) => {
+    if (!user) return;
+    const merged = { ...user, ...updates };
+    setUser(merged);
+
+    try {
+      await fetch('/api/v1/auth/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: user.id, ...updates }),
+      });
+    } catch {
+      // Handled silently
     }
   };
 

@@ -15,6 +15,8 @@ import {
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 
+import { AccessRestricted } from '../components/common/AccessRestricted';
+
 export const AdminDashboardPage = () => {
   const { user, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
@@ -22,11 +24,11 @@ export const AdminDashboardPage = () => {
 
   if (!isAdmin) {
     return (
-      <div className="mx-auto max-w-md py-20 text-center space-y-4">
-        <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto" />
-        <h2 className="text-xl font-bold">Access Restricted</h2>
-        <p className="text-xs text-gray-500">You must be logged in as an administrator to access this area.</p>
-      </div>
+      <AccessRestricted
+        title="Admin Clearance Required"
+        message="The SCAR Executive Operations Deck is strictly guarded. Please log in with administrator clearance to monitor real-time GMV, stock levels, and order pipelines."
+        requiredRole="administrator"
+      />
     );
   }
 

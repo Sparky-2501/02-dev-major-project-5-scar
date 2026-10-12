@@ -13,6 +13,9 @@ import { CheckoutPage } from './pages/CheckoutPage';
 import { LoginPage } from './pages/LoginPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { ManagerDashboardPage } from './pages/ManagerDashboardPage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { CreatorPage } from './pages/CreatorPage';
+import { ProfilePage } from './pages/ProfilePage';
 
 export function App() {
   return (
@@ -31,6 +34,9 @@ export function App() {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/admin" element={<AdminDashboardPage />} />
                   <Route path="/manager" element={<ManagerDashboardPage />} />
+                  <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                  <Route path="/creator" element={<CreatorPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
                   <Route path="*" element={<HomePage />} />
                 </Routes>
               </main>

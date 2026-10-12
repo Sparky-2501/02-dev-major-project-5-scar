@@ -219,18 +219,17 @@ export const CampaignProvider = ({ children }) => {
     return newCampaign;
   };
 
-  // Update Campaign Status (Approve, Pause, Activate)
-  const updateCampaignStatus = (campaignId, newStatus, actor) => {
-    setCampaigns((prev) =>
-      prev.map((c) => (c.id === campaignId ? { ...c, status: newStatus } : c))
-    );
+  // Delete / Remove Campaign
+  const deleteCampaign = (campaignId, actor) => {
+    const camp = campaigns.find((c) => c.id === campaignId);
+    setCampaigns((prev) => prev.filter((c) => c.id !== campaignId));
 
     logAuditAction({
       actor,
-      actionType: 'CAMPAIGN_STATUS_CHANGE',
+      actionType: 'CAMPAIGN_DELETE',
       resourceId: campaignId,
       resourceType: 'campaign',
-      details: `Changed campaign status to ${newStatus}`,
+      details: `Deleted campaign promotion: "${camp?.name || campaignId}"`,
     });
   };
 
@@ -246,6 +245,7 @@ export const CampaignProvider = ({ children }) => {
         archiveProduct,
         createCampaign,
         updateCampaignStatus,
+        deleteCampaign,
         logAuditAction,
         trackEvent,
       }}

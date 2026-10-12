@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { DEMO_PRODUCTS } from '../data/catalog';
+import { useCampaigns } from '../context/CampaignContext';
 import { useCart } from '../context/CartContext';
+import { DEMO_PRODUCTS } from '../data/catalog';
 import { formatCurrency } from '../utils/cn';
 import { Star, ShieldCheck, Truck, RefreshCw, ShoppingBag, Check, Zap, AlertCircle } from 'lucide-react';
 import { Button } from '../components/common/Button';
@@ -9,8 +10,10 @@ import { Badge } from '../components/common/Badge';
 
 export const ProductDetailPage = () => {
   const { slug } = useParams();
-  const product = DEMO_PRODUCTS.find((p) => p.slug === slug || p.id === slug) || DEMO_PRODUCTS[0];
+  const { products, getProductDiscount } = useCampaigns();
+  const product = products.find((p) => p.slug === slug || p.id === slug) || DEMO_PRODUCTS.find((p) => p.slug === slug || p.id === slug) || DEMO_PRODUCTS[0];
   const { addToCart } = useCart();
+  const discountInfo = getProductDiscount(product);
 
   const [selectedImage, setSelectedImage] = useState(product.images?.[0] || product.thumbnail);
   const [selectedVariant, setSelectedVariant] = useState(product.variants?.[0]);

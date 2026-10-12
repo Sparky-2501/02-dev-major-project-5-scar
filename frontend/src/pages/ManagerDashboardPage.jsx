@@ -36,6 +36,7 @@ export const ManagerDashboardPage = () => {
     archiveProduct,
     createCampaign,
     updateCampaignStatus,
+    deleteCampaign,
   } = useCampaigns();
 
   // Navigation tab based on permissions
@@ -60,6 +61,7 @@ export const ManagerDashboardPage = () => {
     sku: '',
     stock: 10,
     thumbnail: '/images/products/men/men_1.svg',
+    images: ['/images/products/men/men_1.svg'],
   });
 
   const [isUploading, setIsUploading] = useState(false);
@@ -119,43 +121,67 @@ export const ManagerDashboardPage = () => {
     });
   }, [products, productSearch, productCatFilter]);
 
-  // Cloudinary / Local Image File Upload Handler
+  // Cloudinary / Local Image File Upload Handler (Up to 4 images)
   const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    if ((productForm.images?.length || 0) + files.length > 4) {
+      setUploadError('Maximum 4 product photos allowed per product.');
+      return;
+    }
 
     setIsUploading(true);
     setUploadError('');
 
     try {
-      const formData = new FormData();
-      formData.append('image', file);
+      const newUploadedUrls = [];
 
-      const res = await fetch('/api/v1/upload', {
-        method: 'POST',
-        body: formData,
-      });
+      for (const file of files) {
+        try {
+          const formData = new FormData();
+          formData.append('image', file);
 
-      const data = await res.json();
-      if (data.success && data.data?.secureUrl) {
-        setProductForm((prev) => ({
-          ...prev,
-          thumbnail: data.data.secureUrl,
-        }));
-      } else {
-        throw new Error(data.error?.message || data.message || 'Image upload failed');
+          const res = await fetch('/api/v1/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const data = await res.json();
+          if (data.success && data.data?.secureUrl) {
+            newUploadedUrls.push(data.data.secureUrl);
+          } else {
+            throw new Error('Local fallback');
+          }
+        } catch {
+          // Graceful local object preview
+          const objectUrl = URL.createObjectURL(file);
+          newUploadedUrls.push(objectUrl);
+        }
       }
-    } catch (err) {
-      // Graceful local preview fallback
-      const objectUrl = URL.createObjectURL(file);
-      setProductForm((prev) => ({
-        ...prev,
-        thumbnail: objectUrl,
-      }));
-      setUploadError('Using local preview (Backend API offline or keys pending).');
+
+      setProductForm((prev) => {
+        const combined = [...(prev.images || []), ...newUploadedUrls].slice(0, 4);
+        return {
+          ...prev,
+          thumbnail: combined[0] || prev.thumbnail,
+          images: combined,
+        };
+      });
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const removeGalleryImage = (indexToRemove) => {
+    setProductForm((prev) => {
+      const filtered = prev.images.filter((_, idx) => idx !== indexToRemove);
+      return {
+        ...prev,
+        thumbnail: filtered[0] || '/images/products/men/men_1.svg',
+        images: filtered.length > 0 ? filtered : ['/images/products/men/men_1.svg'],
+      };
+    });
   };
 
   // Product Form Submit Handler
@@ -172,8 +198,8 @@ export const ManagerDashboardPage = () => {
       price: formattedPrice,
       originalPrice: productForm.originalPrice ? parseInt(productForm.originalPrice, 10) : formattedPrice,
       description: productForm.description,
-      thumbnail: productForm.thumbnail,
-      images: [productForm.thumbnail],
+      thumbnail: productForm.thumbnail || productForm.images?.[0] || '/images/products/men/men_1.svg',
+      images: productForm.images && productForm.images.length > 0 ? productForm.images : [productForm.thumbnail],
       tags: [productForm.category, 'studio', 'curated'],
       rating: editingProduct?.rating || 5.0,
       reviewsCount: editingProduct?.reviewsCount || 0,
@@ -201,6 +227,7 @@ export const ManagerDashboardPage = () => {
       sku: '',
       stock: 10,
       thumbnail: '/images/products/men/men_1.svg',
+      images: ['/images/products/men/men_1.svg'],
     });
   };
 
@@ -447,6 +474,7 @@ export const ManagerDashboardPage = () => {
                               sku: p.variants?.[0]?.sku || '',
                               stock: p.variants?.[0]?.stock || 10,
                               thumbnail: p.thumbnail,
+                              images: p.images && p.images.length > 0 ? p.images : [p.thumbnail],
                             });
                             setShowProductModal(true);
                           }}
@@ -567,6 +595,19 @@ export const ManagerDashboardPage = () => {
                         <PlayCircle className="w-3.5 h-3.5" /> Resume
                       </button>
                     )}
+                    {(isAdmin || hasPermission('campaigns.create')) && (
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Are you sure you want to permanently delete campaign "${camp.name}"?`)) {
+                            deleteCampaign(camp.id, user);
+                          }
+                        }}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-scar-800 p-1.5 rounded-lg transition-colors ml-1"
+                        title="Delete Sale Campaign"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -683,26 +724,52 @@ export const ManagerDashboardPage = () => {
                 />
               </div>
 
-              {/* Cloudinary / Local Image Upload Field */}
-              <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-scar-800/60 border border-gray-200 dark:border-scar-700 space-y-2">
-                <label className="block font-bold">Product Artwork / Photo</label>
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-xl border border-gray-200 dark:border-scar-700 overflow-hidden bg-white dark:bg-scar-900 shrink-0">
-                    <img src={productForm.thumbnail} alt="Preview" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      disabled={isUploading}
-                      className="block w-full text-[11px] text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-brand-orange file:text-white hover:file:bg-orange-600 cursor-pointer"
-                    />
-                    <p className="text-[10px] text-gray-400">
-                      {isUploading ? 'Uploading to Cloudinary...' : 'Images upload to Cloudinary & store secure URL in database.'}
-                    </p>
-                    {uploadError && <p className="text-[10px] text-amber-500 font-medium">{uploadError}</p>}
-                  </div>
+              {/* Multi-Image Cloudinary Upload Field (Max 4 photos) */}
+              <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-scar-800/60 border border-gray-200 dark:border-scar-700 space-y-3">
+                <div className="flex justify-between items-center">
+                  <label className="block font-bold">Product Photos (Max 4 images)</label>
+                  <span className="text-[11px] font-semibold text-gray-500">
+                    {productForm.images?.length || 0}/4 uploaded
+                  </span>
+                </div>
+
+                {/* Gallery Previews with Remove Buttons */}
+                <div className="grid grid-cols-4 gap-2">
+                  {productForm.images?.map((imgUrl, idx) => (
+                    <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-scar-700 bg-white dark:bg-scar-900 shadow-sm">
+                      <img src={imgUrl} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
+                      {idx === 0 && (
+                        <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] px-1 rounded font-bold">
+                          Cover
+                        </span>
+                      )}
+                      {productForm.images.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeGalleryImage(idx)}
+                          className="absolute top-1 right-1 p-1 rounded-full bg-red-600 text-white opacity-80 group-hover:opacity-100 hover:bg-red-700 shadow"
+                          title="Remove photo"
+                        >
+                          <Trash2 className="w-2.5 h-2.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-1">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={isUploading || (productForm.images?.length || 0) >= 4}
+                    onChange={handleImageUpload}
+                    className="block w-full text-[11px] text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-brand-orange file:text-white hover:file:bg-orange-600 cursor-pointer disabled:opacity-50"
+                  />
+                  <p className="text-[10px] text-gray-400">
+                    {isUploading ? 'Uploading to Cloudinary...' : 'Select up to 4 images. Cover photo will be primary product thumbnail.'}
+                  </p>
+                  {uploadError && <p className="text-[10px] text-amber-500 font-medium">{uploadError}</p>}
                 </div>
               </div>
 

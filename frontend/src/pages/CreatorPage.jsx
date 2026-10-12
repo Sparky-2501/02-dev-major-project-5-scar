@@ -58,7 +58,7 @@ const OTHER_PROJECTS = [
 
 export const CreatorPage = () => {
   return (
-    <div className="min-h-screen bg-[#F7F7F7] py-12 px-4 sm:px-6 lg:px-8 font-satoshi selection:bg-[#6C5CE7] selection:text-white relative overflow-hidden">
+    <div className="min-h-screen bg-[#F7F7F7] py-12 px-4 sm:px-6 lg:px-8 font-satoshi selection:bg-[#6C5CE7] selection:text-white relative overflow-hidden w-full max-w-full">
       {/* Decorative Floating Background Shapes */}
       <div
         aria-hidden="true"

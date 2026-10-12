@@ -62,6 +62,10 @@ export const CartDrawer = () => {
                   src={item.image}
                   alt={item.title}
                   className="w-16 h-16 rounded-lg object-cover bg-gray-200 dark:bg-scar-700 shrink-0"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=200&q=80';
+                  }}
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start">

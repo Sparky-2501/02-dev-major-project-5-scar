@@ -13,6 +13,14 @@ import { uploadToCloudinary, isCloudinaryConfigured } from './config/cloudinary.
 
 export const app = express();
 
+app.use((req, res, next) => {
+  if (config.env === 'production' && req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect(301, `https://${req.headers.host}${req.url}`);
+  }
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  next();
+});
+
 // Security & Parsing Middlewares
 app.use(helmet());
 app.use(cors({
@@ -209,6 +217,15 @@ app.post('/api/v1/checkout/purchase', (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// Analytics tracking endpoint
+app.post('/api/v1/analytics/events', (req, res) => {
+  const event = req.body;
+  if (event && event.type) {
+    logger.debug({ eventType: event.type, pathname: event.pathname }, 'Client analytics logged');
+  }
+  res.status(204).end();
 });
 
 // Centralized error handler

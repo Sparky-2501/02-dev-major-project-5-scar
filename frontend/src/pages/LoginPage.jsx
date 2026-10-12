@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, User, ArrowRight, Sparkles, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Sparkles, ShieldAlert, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { analytics } from '../utils/analytics';
 
 export const LoginPage = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -12,53 +13,94 @@ export const LoginPage = () => {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  // Anti-Bot / Spam Protections
+  const [honeypot, setHoneypot] = useState('');
+  const [mountTime] = useState(Date.now());
+
   const { login, register, isLoading } = useAuth();
   const navigate = useNavigate();
+
+  const validateForm = () => {
+    // 1. Spam / Bot Honeypot Check
+    if (honeypot) {
+      // Bot filled the invisible honeypot field
+      return 'Automated submission detected. Request denied.';
+    }
+
+    // 2. Bot Timing Check (must take at least 500ms for a real human to type)
+    if (Date.now() - mountTime < 500) {
+      return 'Submission was unusually rapid. Please try again.';
+    }
+
+    // 3. Email format regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return 'Please enter a valid email address (e.g., user@example.com).';
+    }
+
+    if (isSignUp) {
+      if (!name.trim() || name.trim().length < 2) {
+        return 'Please enter your full name (minimum 2 characters).';
+      }
+      if (password.length < 4) {
+        return 'Password must be at least 4 characters long.';
+      }
+      if (password !== confirmPassword) {
+        return 'Password confirmation does not match.';
+      }
+    } else {
+      if (!password) {
+        return 'Please enter your account password.';
+      }
+    }
+
+    return null;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccessMsg('');
 
-    if (isSignUp) {
-      if (!name.trim()) {
-        setError('Please enter your full name.');
-        return;
-      }
-      if (password.length < 4) {
-        setError('Password must be at least 4 characters.');
-        return;
-      }
-      if (password !== confirmPassword) {
-        setError('Passwords do not match.');
-        return;
-      }
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
+    if (isSignUp) {
       try {
         const res = await register({ name: name.trim(), email: email.trim(), password });
         if (res.success) {
+          analytics.trackEvent('auth_register_success', { email: email.trim() });
           setSuccessMsg('Account created successfully! Welcome to SCAR.');
           setTimeout(() => {
             navigate('/catalog');
           }, 800);
         }
       } catch (err) {
-        setError(err.message || 'Failed to create account.');
+        analytics.trackEvent('auth_register_failed', { error: err.message });
+        setError(err.message || 'Failed to create account. Please try again.');
       }
     } else {
       try {
         const res = await login(email.trim(), password);
         if (res.success) {
-          if (res.user.role === 'admin') {
-            navigate('/admin');
-          } else if (res.user.role === 'manager') {
-            navigate('/manager');
-          } else {
-            navigate('/catalog');
-          }
+          analytics.trackEvent('auth_login_success', { role: res.user.role });
+          setSuccessMsg(`Signed in successfully as ${res.user.name}!`);
+          setTimeout(() => {
+            if (res.user.role === 'admin') {
+              navigate('/admin');
+            } else if (res.user.role === 'manager') {
+              navigate('/manager');
+            } else {
+              navigate('/catalog');
+            }
+          }, 500);
         }
       } catch (err) {
-        setError('Invalid email or password. Please verify credentials.');
+        analytics.trackEvent('auth_login_failed', { email: email.trim() });
+        setError('Invalid email or password. Please verify your credentials.');
       }
     }
   };
@@ -68,21 +110,22 @@ export const LoginPage = () => {
     setEmail('user@gmail.com');
     setPassword('user');
     setError('');
+    setSuccessMsg('Demo customer credentials populated.');
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center bg-[#F7F7F7] px-4 py-12 overflow-hidden font-satoshi selection:bg-[#6C5CE7] selection:text-white">
-      {/* Playful Floating Decorative Background Elements */}
+    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center bg-[#F7F7F7] px-4 py-12 overflow-hidden font-satoshi selection:bg-[#6C5CE7] selection:text-white w-full max-w-full">
+      {/* Decorative Blurs */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-12 -left-12 w-72 h-72 rounded-full bg-[#6C5CE7]/10 blur-3xl animate-float-slow"
+        className="pointer-events-none absolute -top-12 -left-12 w-64 h-64 rounded-full bg-[#6C5CE7]/10 blur-3xl animate-float-slow"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-16 -right-16 w-80 h-80 rounded-full bg-[#FF8C42]/15 blur-3xl animate-float"
+        className="pointer-events-none absolute -bottom-16 -right-16 w-72 h-72 rounded-full bg-[#FF8C42]/15 blur-3xl animate-float"
       />
 
-      {/* Floating Accent Shapes */}
+      {/* Floating Accent Badges (Hidden on small mobile to avoid overflow) */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute top-16 left-[12%] hidden lg:flex items-center gap-2 px-4 py-2 rounded-2xl bg-white shadow-xl border border-gray-100 animate-float"
@@ -108,7 +151,7 @@ export const LoginPage = () => {
       </div>
 
       {/* Main Container Card */}
-      <div className="relative w-full max-w-md bg-white rounded-3xl p-8 sm:p-10 shadow-2xl border border-[#E5E7EB] z-10">
+      <div className="relative w-full max-w-md bg-white rounded-3xl p-6 sm:p-10 shadow-2xl border border-[#E5E7EB] z-10">
         {/* Brand Icon & Heading */}
         <div className="text-center space-y-2 mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#6C5CE7] text-white font-general font-bold text-2xl shadow-lg hover:scale-105 transition-transform">
@@ -117,7 +160,7 @@ export const LoginPage = () => {
           <h1 className="font-general font-bold text-3xl sm:text-4xl text-[#2D3436] tracking-tight">
             {isSignUp ? 'Create Account' : 'Welcome Back'}
           </h1>
-          <p className="text-xs sm:text-sm text-gray-500 font-medium">
+          <p className="text-xs sm:text-sm text-gray-600 font-medium">
             {isSignUp
               ? 'Join SCAR to experience personalized luxury retail'
               : 'Sign in to access your account, orders, and favorites'}
@@ -136,7 +179,7 @@ export const LoginPage = () => {
             className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${
               !isSignUp
                 ? 'bg-white text-[#2D3436] shadow-md'
-                : 'text-gray-500 hover:text-[#2D3436]'
+                : 'text-gray-600 hover:text-[#2D3436]'
             }`}
           >
             Sign In
@@ -151,7 +194,7 @@ export const LoginPage = () => {
             className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${
               isSignUp
                 ? 'bg-white text-[#2D3436] shadow-md'
-                : 'text-gray-500 hover:text-[#2D3436]'
+                : 'text-gray-600 hover:text-[#2D3436]'
             }`}
           >
             Create Account
@@ -160,20 +203,20 @@ export const LoginPage = () => {
 
         {/* Demo User Quick Button - Only for user@gmail.com */}
         {!isSignUp && (
-          <div className="mb-6 p-3 rounded-2xl bg-[#F7F7F7] border border-[#E5E7EB] flex items-center justify-between gap-3">
+          <div className="mb-6 p-3.5 rounded-2xl bg-[#F7F7F7] border border-[#E5E7EB] flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 rounded-full bg-[#6C5CE7] animate-twinkle" />
+              <span className="flex h-2.5 w-2.5 rounded-full bg-[#6C5CE7] animate-twinkle" />
               <div className="text-left">
-                <p className="text-[11px] font-bold text-[#2D3436]">Demo Customer Account</p>
-                <p className="text-[10px] text-gray-500">user@gmail.com &bull; pass: user</p>
+                <p className="text-xs font-bold text-[#2D3436]">Demo Customer Account</p>
+                <p className="text-[11px] text-gray-600 font-medium">user@gmail.com &bull; pass: user</p>
               </div>
             </div>
             <button
               type="button"
               onClick={fillDemoCustomer}
-              className="px-3 py-1.5 rounded-xl bg-white border border-[#E5E7EB] text-[11px] font-bold text-[#6C5CE7] hover:bg-[#6C5CE7] hover:text-white transition-all shadow-sm flex items-center gap-1"
+              className="px-3 py-1.5 rounded-xl bg-white border border-[#E5E7EB] text-xs font-bold text-[#6C5CE7] hover:bg-[#6C5CE7] hover:text-white transition-all shadow-sm flex items-center gap-1 cursor-pointer"
             >
-              <Sparkles className="w-3 h-3" />
+              <Sparkles className="w-3.5 h-3.5" />
               <span>Fill</span>
             </button>
           </div>
@@ -183,19 +226,31 @@ export const LoginPage = () => {
         {error && (
           <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 shrink-0" />
-            <span>{error}</span>
+            <span className="font-medium">{error}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span>{successMsg}</span>
+          <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+            <span className="font-medium">{successMsg}</span>
           </div>
         )}
 
-        {/* Form */}
+        {/* Form with Honeypot Bot Trap */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Honeypot hidden input */}
+          <input
+            type="text"
+            name="hp_contact_check"
+            value={honeypot}
+            onChange={(e) => setHoneypot(e.target.value)}
+            className="hidden"
+            tabIndex="-1"
+            autoComplete="off"
+            aria-hidden="true"
+          />
+
           {isSignUp && (
             <div>
               <label className="block text-xs font-semibold text-[#2D3436] mb-1.5">
@@ -210,7 +265,7 @@ export const LoginPage = () => {
                   onChange={(e) => setName(e.target.value)}
                   className="w-full rounded-xl border border-[#E5E7EB] bg-white py-2.5 pl-10 pr-3 text-xs sm:text-sm text-[#2D3436] focus:outline-none focus:ring-2 focus:ring-[#6C5CE7] transition-all"
                 />
-                <User className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <User className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
               </div>
             </div>
           )}
@@ -228,7 +283,7 @@ export const LoginPage = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-xl border border-[#E5E7EB] bg-white py-2.5 pl-10 pr-3 text-xs sm:text-sm text-[#2D3436] focus:outline-none focus:ring-2 focus:ring-[#6C5CE7] transition-all"
               />
-              <Mail className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+              <Mail className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
             </div>
           </div>
 
@@ -245,7 +300,7 @@ export const LoginPage = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-xl border border-[#E5E7EB] bg-white py-2.5 pl-10 pr-3 text-xs sm:text-sm text-[#2D3436] focus:outline-none focus:ring-2 focus:ring-[#6C5CE7] transition-all"
               />
-              <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+              <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
             </div>
           </div>
 
@@ -263,7 +318,7 @@ export const LoginPage = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full rounded-xl border border-[#E5E7EB] bg-white py-2.5 pl-10 pr-3 text-xs sm:text-sm text-[#2D3436] focus:outline-none focus:ring-2 focus:ring-[#6C5CE7] transition-all"
                 />
-                <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
               </div>
             </div>
           )}
@@ -286,10 +341,9 @@ export const LoginPage = () => {
         </form>
 
         {/* Footer helper note */}
-        <div className="mt-6 pt-5 border-t border-[#E5E7EB] text-center">
-          <p className="text-[11px] text-gray-400">
-            Secure login powered by MongoDB and encrypted session tokens.
-          </p>
+        <div className="mt-6 pt-5 border-t border-[#E5E7EB] text-center flex items-center justify-center gap-1.5 text-xs text-gray-500">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Protected with Honeypot anti-spam & bcrypt encryption</span>
         </div>
       </div>
     </div>

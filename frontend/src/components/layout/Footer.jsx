@@ -75,28 +75,33 @@ export const Footer = () => {
 
         <div>
           <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">Creator & Legal</h4>
-          <ul className="space-y-2 text-xs">
+          <ul className="space-y-2.5 text-xs">
             <li>
-              <Link to="/privacy" className="hover:text-white transition-colors text-emerald-400 font-semibold">
+              <Link to="/privacy" className="text-gray-300 hover:text-white transition-colors">
                 Privacy Policy & Disclaimer
               </Link>
             </li>
             <li>
-              <Link to="/creator" className="hover:text-white transition-colors text-[#6C5CE7] font-semibold">
+              <Link to="/terms" className="text-gray-300 hover:text-white transition-colors">
+                Terms & Conditions
+              </Link>
+            </li>
+            <li>
+              <Link to="/creator" className="text-gray-300 hover:text-white transition-colors">
                 About the Creator
               </Link>
             </li>
             <li>
-              <Link to="/profile" className="hover:text-white transition-colors">
-                User Profile
+              <Link to="/profile" className="text-gray-300 hover:text-white transition-colors">
+                User Profile Management
               </Link>
             </li>
             <li>
               <a
                 href="mailto:prathamesh.shelke@example.com?subject=Custom%20Web%20Design%20Inquiry"
-                className="hover:text-white transition-colors text-amber-400"
+                className="text-gray-300 hover:text-white transition-colors"
               >
-                Hire for Custom Design
+                Contact for Custom Design
               </a>
             </li>
           </ul>

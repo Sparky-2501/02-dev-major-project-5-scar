@@ -34,7 +34,7 @@ export const Reveal = ({
         delay,
         ease: [0.21, 0.47, 0.32, 0.98],
       }}
-      className={className}
+      className={`overflow-hidden ${className}`}
     >
       {children}
     </motion.div>

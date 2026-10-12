@@ -12,18 +12,34 @@ export const CheckoutPage = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    name: user?.name || 'Devansh Singhal',
-    email: user?.email || 'devansh@example.com',
-    phone: '+91 98765 43210',
-    address: 'Flat 402, Skyline Residency, Outer Ring Road',
-    city: 'Bengaluru',
-    state: 'Karnataka',
-    postalCode: '560103',
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    address: user?.address?.street || '',
+    city: user?.address?.city || '',
+    state: user?.address?.state || '',
+    postalCode: user?.address?.postalCode || '',
   });
+
+  // Sync user data if user logs in or profile loads
+  React.useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        name: prev.name || user.name || '',
+        email: prev.email || user.email || '',
+        phone: prev.phone || user.phone || '',
+        address: prev.address || user.address?.street || '',
+        city: prev.city || user.address?.city || '',
+        state: prev.state || user.address?.state || '',
+        postalCode: prev.postalCode || user.address?.postalCode || '',
+      }));
+    }
+  }, [user]);
 
   const [paymentMode, setPaymentMode] = useState('simulated'); // 'simulated' or 'razorpay_test'
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(null);
+  const [checkoutError, setCheckoutError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -223,7 +239,15 @@ export const CheckoutPage = () => {
               {items.map((item) => (
                 <div key={item.sku} className="flex justify-between items-center text-xs">
                   <div className="flex items-center gap-2 truncate pr-2">
-                    <img src={item.image} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                    <img
+                      src={item.image}
+                      alt=""
+                      className="w-8 h-8 rounded object-cover shrink-0"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=100&q=80';
+                      }}
+                    />
                     <span className="truncate">{item.title} &times; {item.quantity}</span>
                   </div>
                   <span className="font-bold shrink-0">{formatCurrency(item.price * item.quantity)}</span>

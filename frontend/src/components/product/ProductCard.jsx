@@ -37,6 +37,10 @@ export const ProductCard = ({ product }) => {
           alt={product.title}
           className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=600&q=80';
+          }}
         />
 
         {/* Floating Badges */}

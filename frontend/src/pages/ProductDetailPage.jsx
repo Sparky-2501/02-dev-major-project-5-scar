@@ -53,6 +53,10 @@ export const ProductDetailPage = () => {
               src={selectedImage}
               alt={product.title}
               className="w-full h-full object-cover object-center"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
+              }}
             />
             {isLowStock && (
               <div className="absolute top-4 left-4">
@@ -76,7 +80,15 @@ export const ProductDetailPage = () => {
                       : 'border-transparent opacity-70 hover:opacity-100'
                   }`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <img
+                    src={img}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=200&q=80';
+                    }}
+                  />
                 </button>
               ))}
             </div>

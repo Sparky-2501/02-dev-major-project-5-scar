@@ -62,6 +62,9 @@ export const ManagerDashboardPage = () => {
     thumbnail: '/images/products/men/men_1.svg',
   });
 
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
   // New Campaign Form
   const [campaignForm, setCampaignForm] = useState({
     name: '',
@@ -115,6 +118,45 @@ export const ManagerDashboardPage = () => {
       return true;
     });
   }, [products, productSearch, productCatFilter]);
+
+  // Cloudinary / Local Image File Upload Handler
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const res = await fetch('/api/v1/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success && data.data?.secureUrl) {
+        setProductForm((prev) => ({
+          ...prev,
+          thumbnail: data.data.secureUrl,
+        }));
+      } else {
+        throw new Error(data.error?.message || data.message || 'Image upload failed');
+      }
+    } catch (err) {
+      // Graceful local preview fallback
+      const objectUrl = URL.createObjectURL(file);
+      setProductForm((prev) => ({
+        ...prev,
+        thumbnail: objectUrl,
+      }));
+      setUploadError('Using local preview (Backend API offline or keys pending).');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // Product Form Submit Handler
   const handleProductSubmit = (e) => {
@@ -639,6 +681,29 @@ export const ManagerDashboardPage = () => {
                   onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
                   className="w-full rounded-xl border border-gray-300 dark:border-scar-700 p-2.5 bg-gray-50 dark:bg-scar-800"
                 />
+              </div>
+
+              {/* Cloudinary / Local Image Upload Field */}
+              <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-scar-800/60 border border-gray-200 dark:border-scar-700 space-y-2">
+                <label className="block font-bold">Product Artwork / Photo</label>
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl border border-gray-200 dark:border-scar-700 overflow-hidden bg-white dark:bg-scar-900 shrink-0">
+                    <img src={productForm.thumbnail} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={isUploading}
+                      className="block w-full text-[11px] text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-brand-orange file:text-white hover:file:bg-orange-600 cursor-pointer"
+                    />
+                    <p className="text-[10px] text-gray-400">
+                      {isUploading ? 'Uploading to Cloudinary...' : 'Images upload to Cloudinary & store secure URL in database.'}
+                    </p>
+                    {uploadError && <p className="text-[10px] text-amber-500 font-medium">{uploadError}</p>}
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-scar-800">

@@ -219,6 +219,21 @@ export const CampaignProvider = ({ children }) => {
     return newCampaign;
   };
 
+  // Update Campaign Status (Approve, Pause, Activate)
+  const updateCampaignStatus = (campaignId, newStatus, actor) => {
+    setCampaigns((prev) =>
+      prev.map((c) => (c.id === campaignId ? { ...c, status: newStatus } : c))
+    );
+
+    logAuditAction({
+      actor,
+      actionType: 'CAMPAIGN_STATUS_CHANGE',
+      resourceId: campaignId,
+      resourceType: 'campaign',
+      details: `Changed campaign status to ${newStatus}`,
+    });
+  };
+
   // Delete / Remove Campaign
   const deleteCampaign = (campaignId, actor) => {
     const camp = campaigns.find((c) => c.id === campaignId);

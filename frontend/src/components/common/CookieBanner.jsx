@@ -22,7 +22,7 @@ export const CookieBanner = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md z-50 animate-float-fast font-satoshi">
+    <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md z-50 font-satoshi transition-all">
       <div className="bg-white dark:bg-scar-900 rounded-3xl p-5 sm:p-6 shadow-2xl border border-gray-200 dark:border-scar-800 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5">

@@ -116,8 +116,19 @@ export const ProfilePage = () => {
         {/* Header Profile Card */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-gray-100 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
           <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-[#6C5CE7] to-[#FF8C42] text-white font-general font-bold text-3xl flex items-center justify-center shadow-lg">
-              {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-orange-500/30 bg-gray-900 text-white font-general font-bold text-3xl flex items-center justify-center shadow-lg shrink-0">
+              {isAdmin || user.email === 'admin@scar.local' || user.name?.toLowerCase().includes('prathamesh') ? (
+                <img
+                  src="/prathamesh.jpg"
+                  alt={user.name}
+                  className="w-full h-full object-cover object-top"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <span>{user.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
+              )}
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">

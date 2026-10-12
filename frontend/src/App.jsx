@@ -22,12 +22,16 @@ import { CreatorPage } from './pages/CreatorPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
+import { useLocation } from 'react-router-dom';
+
 function AppContent() {
   usePageMetadata();
+  const location = useLocation();
+  const isCreatorPage = location.pathname === '/creator';
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-scar-950 font-sans text-gray-900 dark:text-gray-100 overflow-x-hidden w-full max-w-full">
-      <Navbar />
+      {!isCreatorPage && <Navbar />}
       <main className="flex-1 w-full max-w-full overflow-x-hidden">
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -44,7 +48,7 @@ function AppContent() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
-      <Footer />
+      {!isCreatorPage && <Footer />}
       <CartDrawer />
       <CookieBanner />
     </div>

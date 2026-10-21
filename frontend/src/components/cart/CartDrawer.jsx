@@ -1,14 +1,29 @@
 import React from 'react';
 import { X, Trash2, Plus, Minus, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import { formatCurrency } from '../../utils/cn';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../common/Button';
+import { promptLoginModal } from '../common/LoginNudgePopup';
 
 export const CartDrawer = () => {
   const { items, isOpen, setIsOpen, updateQuantity, removeFromCart, subtotal, shipping, grandTotal } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   if (!isOpen) return null;
+
+  const handleProceedCheckout = (e) => {
+    e.preventDefault();
+    if (!user) {
+      setIsOpen(false);
+      promptLoginModal('Namaste! Kindly sign in or create an account to proceed with your order and doorstep delivery across India.');
+      return;
+    }
+    setIsOpen(false);
+    navigate('/checkout');
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -129,14 +144,14 @@ export const CartDrawer = () => {
               </div>
             </div>
 
-            <Link
-              to="/checkout"
-              onClick={() => setIsOpen(false)}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-brand-orange py-3 text-sm font-bold text-white shadow-md hover:bg-orange-600 transition-colors"
+            <button
+              type="button"
+              onClick={handleProceedCheckout}
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-brand-orange py-3 text-sm font-bold text-white shadow-md hover:bg-orange-600 transition-colors cursor-pointer"
             >
               Proceed to Secure Checkout
               <ArrowRight className="w-4 h-4" />
-            </Link>
+            </button>
           </div>
         )}
       </div>

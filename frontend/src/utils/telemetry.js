@@ -1,3 +1,5 @@
+import { getApiUrl } from './api';
+
 /**
  * Ad-blocker friendly internal telemetry engine for SCAR
  */
@@ -42,7 +44,7 @@ class TelemetryService {
       // Use ad-block neutral route '/api/v1/telemetry/metrics'
       if (typeof window !== 'undefined' && navigator.sendBeacon) {
         const payload = new Blob([JSON.stringify(event)], { type: 'application/json' });
-        navigator.sendBeacon('/api/v1/telemetry/metrics', payload);
+        navigator.sendBeacon(getApiUrl('/api/v1/telemetry/metrics'), payload);
       }
     } catch {
       // Graceful fallback - zero console noise

@@ -1,14 +1,18 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Star, ShoppingBag, Tag } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Star, ShoppingBag, Tag, Trash2, Zap } from 'lucide-react';
 import { formatCurrency } from '../../utils/cn';
 import { Badge } from '../common/Badge';
 import { useCart } from '../../context/CartContext';
 import { useCampaigns } from '../../context/CampaignContext';
+import { useAuth } from '../../context/AuthContext';
+import { promptLoginModal } from '../common/LoginNudgePopup';
 
 export const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
-  const { getProductDiscount } = useCampaigns();
+  const { getProductDiscount, archiveProduct } = useCampaigns();
+  const { user, isAdmin } = useAuth();
+  const navigate = useNavigate();
   
   const discountInfo = getProductDiscount(product);
   const primaryVariant = product.variants?.[0];
@@ -23,13 +27,52 @@ export const ProductCard = ({ product }) => {
     e.preventDefault();
     e.stopPropagation();
     if (!isOutOfStock) {
-      // Pass authoritative price to cart
       addToCart({ ...product, price: displayPrice }, primaryVariant, 1);
+    }
+  };
+
+  const handleBuyNow = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isOutOfStock) return;
+
+    if (!user) {
+      promptLoginModal(
+        'Namaste! Kindly sign in or register to buy this item and enjoy complimentary doorstep delivery across India.'
+      );
+      return;
+    }
+
+    addToCart({ ...product, price: displayPrice }, primaryVariant, 1);
+    navigate('/checkout');
+  };
+
+  const handleDeleteItem = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (
+      window.confirm(
+        `Are you sure you want to delete "${product.title}"? It will be removed immediately and the product grid will automatically realign.`
+      )
+    ) {
+      archiveProduct(product.id || product.slug, user);
     }
   };
 
   return (
     <div className="group relative flex flex-col rounded-2xl border border-gray-200 dark:border-scar-800 bg-white dark:bg-scar-900 overflow-hidden shadow-sm hover:shadow-premium transition-all duration-300">
+      {/* Admin In-Place Delete Button */}
+      {isAdmin && (
+        <button
+          onClick={handleDeleteItem}
+          className="absolute top-2.5 right-2.5 z-30 flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-md transition-all cursor-pointer"
+          title="Admin: Delete item from catalog"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          <span>Delete Item</span>
+        </button>
+      )}
+
       {/* Image & Badges */}
       <Link to={`/product/${product.slug}`} className="relative aspect-square overflow-hidden bg-gray-100 dark:bg-scar-800">
         <img
@@ -98,21 +141,29 @@ export const ProductCard = ({ product }) => {
           </Link>
         </div>
 
-        {/* Price & Variant details */}
-        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-scar-800 flex items-center justify-between">
-          <div className="flex items-baseline gap-2">
-            <span className="text-base font-extrabold text-gray-900 dark:text-white">
-              {formatCurrency(displayPrice)}
-            </span>
-            {originalPrice && originalPrice > displayPrice && (
-              <span className="text-xs text-gray-400 line-through">
-                {formatCurrency(originalPrice)}
+        {/* Price & Buy Now Action */}
+        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-scar-800 flex items-center justify-between gap-2">
+          <div className="flex flex-col">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-base font-extrabold text-gray-900 dark:text-white">
+                {formatCurrency(displayPrice)}
               </span>
-            )}
+              {originalPrice && originalPrice > displayPrice && (
+                <span className="text-xs text-gray-400 line-through">
+                  {formatCurrency(originalPrice)}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] text-gray-500">Incl. GST &bull; Pan-India Delivery</span>
           </div>
-          <span className="text-[11px] font-medium text-gray-500">
-            {product.variants?.length > 1 ? `${product.variants.length} options` : 'Standard'}
-          </span>
+
+          <button
+            onClick={handleBuyNow}
+            disabled={isOutOfStock}
+            className="px-3.5 py-1.5 rounded-xl bg-brand-orange hover:bg-orange-600 text-white text-xs font-bold transition-colors disabled:opacity-40 shrink-0 shadow-sm cursor-pointer"
+          >
+            {isOutOfStock ? 'Sold Out' : 'Buy Now'}
+          </button>
         </div>
       </div>
     </div>

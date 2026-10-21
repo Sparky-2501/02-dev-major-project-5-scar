@@ -74,3 +74,8 @@ Thumbs.db
 .agents/
 .gemini/
 .gsd/
+.vscode/
+.vscode-test/
+.idea/
+.cursor/
+.tempmediaStorage/

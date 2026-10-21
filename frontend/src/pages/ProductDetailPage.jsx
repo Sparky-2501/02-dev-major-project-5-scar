@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCampaigns } from '../context/CampaignContext';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { DEMO_PRODUCTS } from '../data/catalog';
 import { formatCurrency } from '../utils/cn';
-import { Star, ShieldCheck, Truck, RefreshCw, ShoppingBag, Check, Zap, AlertCircle } from 'lucide-react';
+import { Star, ShieldCheck, Truck, RefreshCw, ShoppingBag, Check, Zap, AlertCircle, Trash2 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
+import { promptLoginModal } from '../components/common/LoginNudgePopup';
 
 export const ProductDetailPage = () => {
   const { slug } = useParams();
-  const { products, getProductDiscount } = useCampaigns();
+  const navigate = useNavigate();
+  const { products, getProductDiscount, archiveProduct } = useCampaigns();
+  const { user, isAdmin } = useAuth();
   const product = products.find((p) => p.slug === slug || p.id === slug) || DEMO_PRODUCTS.find((p) => p.slug === slug || p.id === slug) || DEMO_PRODUCTS[0];
   const { addToCart } = useCart();
   const discountInfo = getProductDiscount(product);
@@ -28,6 +32,25 @@ export const ProductDetailPage = () => {
       addToCart(product, selectedVariant, quantity);
       setAddedNotice(true);
       setTimeout(() => setAddedNotice(false), 2500);
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (isOutOfStock) return;
+    if (!user) {
+      promptLoginModal(
+        'Namaste! Kindly sign in or register to buy this item and enjoy prompt doorstep delivery across India.'
+      );
+      return;
+    }
+    addToCart(product, selectedVariant, quantity);
+    navigate('/checkout');
+  };
+
+  const handleDeleteProduct = () => {
+    if (window.confirm(`Are you sure you want to delete "${product.title}" from the catalog?`)) {
+      archiveProduct(product.id || product.slug, user);
+      navigate('/catalog');
     }
   };
 
@@ -171,7 +194,7 @@ export const ProductDetailPage = () => {
 
           {/* Action CTAs */}
           <div className="pt-6 border-t border-gray-200 dark:border-scar-800 space-y-3">
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 variant="primary"
                 size="lg"
@@ -182,7 +205,30 @@ export const ProductDetailPage = () => {
               >
                 {isOutOfStock ? 'Sold Out' : addedNotice ? 'Added to Cart!' : 'Add to Bag'}
               </Button>
+
+              <button
+                type="button"
+                disabled={isOutOfStock}
+                onClick={handleBuyNow}
+                className="flex-1 py-4 px-6 rounded-xl bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 font-extrabold text-base transition-colors shadow-md disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Zap className="w-5 h-5 text-brand-orange" />
+                <span>Buy Now</span>
+              </button>
             </div>
+
+            {isAdmin && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleDeleteProduct}
+                  className="w-full py-2.5 px-4 rounded-xl border border-red-300 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 font-bold text-xs flex items-center justify-center gap-2 hover:bg-red-100 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Admin: Delete Product From Catalog</span>
+                </button>
+              </div>
+            )}
 
             {/* Atomic Protection Guarantee Banner */}
             <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-scar-800/50 border border-gray-200 dark:border-scar-700/60 flex items-start gap-3">

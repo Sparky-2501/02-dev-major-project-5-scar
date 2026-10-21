@@ -73,10 +73,12 @@ export const Navbar = () => {
             <Menu className="w-6 h-6" />
           </button>
 
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-xl bg-brand-orange flex items-center justify-center text-white font-black text-lg shadow-md group-hover:scale-105 transition-transform">
-              S
-            </div>
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <img
+              src="/29abd43a-8155-4c06-ba7b-d4524dfc2619.png"
+              alt="SCAR Official Logo"
+              className="w-9 h-9 object-contain rounded-full shadow-sm bg-white dark:bg-scar-900 border border-gray-200 dark:border-scar-700 p-0.5"
+            />
             <span className="text-2xl font-black tracking-tighter text-gray-900 dark:text-white">
               SCAR<span className="text-brand-orange">.</span>
             </span>
@@ -193,11 +195,13 @@ export const Navbar = () => {
                 <Link
                   to="/"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2.5"
                 >
-                  <div className="w-7 h-7 rounded-lg bg-brand-orange flex items-center justify-center text-white font-black text-sm">
-                    S
-                  </div>
+                  <img
+                    src="/29abd43a-8155-4c06-ba7b-d4524dfc2619.png"
+                    alt="SCAR Official Logo"
+                    className="w-8 h-8 object-contain rounded-full shadow-sm bg-white dark:bg-scar-900 border border-gray-200 dark:border-scar-700 p-0.5"
+                  />
                   <span className="text-xl font-black tracking-tight text-gray-900 dark:text-white">
                     SCAR<span className="text-brand-orange">.</span>
                   </span>

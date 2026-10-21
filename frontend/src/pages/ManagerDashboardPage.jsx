@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCampaigns } from '../context/CampaignContext';
 import { formatCurrency } from '../utils/cn';
 import { DEMO_CATEGORIES } from '../data/catalog';
+import { getApiUrl } from '../utils/api';
 import {
   BarChart3,
   Package,
@@ -64,15 +65,16 @@ export const ManagerDashboardPage = () => {
   // New Product Form
   const [productForm, setProductForm] = useState({
     title: '',
-    brand: 'SCAR Studio',
-    category: 'men',
+    brand: 'SCAR Atelier',
+    category: 'women',
+    genderFocus: 'female',
     price: '',
     originalPrice: '',
     description: '',
     sku: '',
     stock: 10,
-    thumbnail: '/images/products/men/men_1.svg',
-    images: ['/images/products/men/men_1.svg'],
+    thumbnail: '/images/products/women/women_1.svg',
+    images: ['/images/products/women/women_1.svg'],
   });
 
   const [isUploading, setIsUploading] = useState(false);
@@ -84,16 +86,17 @@ export const ManagerDashboardPage = () => {
     description: '',
     headline: '',
     type: 'category',
-    targetCategory: 'electronics',
+    targetCategory: 'women',
+    genderTarget: 'female',
     discountType: 'percentage',
-    discountValue: 10,
-    maxDiscount: 2000,
-    priority: 5,
-    bannerImage: '/images/products/electronics/electronics_1.svg',
-    ctaText: 'Shop Promotion',
-    ctaUrl: '/catalog?category=electronics',
-    marqueeEnabled: false,
-    marqueeText: '',
+    discountValue: 15,
+    maxDiscount: 3000,
+    priority: 8,
+    bannerImage: '/images/products/women/women_1.svg',
+    ctaText: 'Shop Atelier Collection',
+    ctaUrl: '/catalog?category=women',
+    marqueeEnabled: true,
+    marqueeText: '✨ LIMITED COUTURE DROP: 15% OFF ATELIER DRESSES & GOWNS',
     startDate: new Date().toISOString().slice(0, 16),
     endDate: new Date(Date.now() + 86400000 * 7).toISOString().slice(0, 16),
   });
@@ -153,7 +156,7 @@ export const ManagerDashboardPage = () => {
           const formData = new FormData();
           formData.append('image', file);
 
-          const res = await fetch('/api/v1/upload', {
+          const res = await fetch(getApiUrl('/api/v1/upload'), {
             method: 'POST',
             body: formData,
           });
@@ -206,6 +209,7 @@ export const ManagerDashboardPage = () => {
       title: productForm.title,
       brand: productForm.brand,
       category: productForm.category,
+      genderFocus: productForm.genderFocus || (productForm.category === 'women' ? 'female' : productForm.category === 'men' ? 'male' : 'unisex'),
       price: formattedPrice,
       originalPrice: productForm.originalPrice ? parseInt(productForm.originalPrice, 10) : formattedPrice,
       description: productForm.description,
@@ -676,17 +680,33 @@ export const ManagerDashboardPage = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block font-bold mb-1">Department</label>
                   <select
                     value={productForm.category}
-                    onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
+                    onChange={(e) => setProductForm({
+                      ...productForm,
+                      category: e.target.value,
+                      genderFocus: e.target.value === 'women' ? 'female' : e.target.value === 'men' ? 'male' : 'unisex'
+                    })}
                     className="w-full rounded-xl border border-gray-300 dark:border-scar-700 p-2.5 bg-gray-50 dark:bg-scar-800 capitalize"
                   >
                     {DEMO_CATEGORIES.map((c) => (
                       <option key={c.id} value={c.slug}>{c.name}</option>
                     ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-bold mb-1">Silhouette Focus</label>
+                  <select
+                    value={productForm.genderFocus || 'female'}
+                    onChange={(e) => setProductForm({ ...productForm, genderFocus: e.target.value })}
+                    className="w-full rounded-xl border border-gray-300 dark:border-scar-700 p-2.5 bg-gray-50 dark:bg-scar-800"
+                  >
+                    <option value="female">Femme (Women / Accs)</option>
+                    <option value="male">Homme (Men / Suiting)</option>
+                    <option value="unisex">Unisex / All</option>
                   </select>
                 </div>
                 <div>
@@ -830,9 +850,9 @@ export const ManagerDashboardPage = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-bold mb-1">Target Category</label>
+                  <label className="block font-bold mb-1">Target Department</label>
                   <select
                     value={campaignForm.targetCategory}
                     onChange={(e) => setCampaignForm({ ...campaignForm, targetCategory: e.target.value })}
@@ -841,6 +861,18 @@ export const ManagerDashboardPage = () => {
                     {DEMO_CATEGORIES.map((c) => (
                       <option key={c.id} value={c.slug}>{c.name}</option>
                     ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-bold mb-1">Silhouette Target</label>
+                  <select
+                    value={campaignForm.genderTarget || 'female'}
+                    onChange={(e) => setCampaignForm({ ...campaignForm, genderTarget: e.target.value })}
+                    className="w-full rounded-xl border border-gray-300 dark:border-scar-700 p-2.5 bg-gray-50 dark:bg-scar-800"
+                  >
+                    <option value="female">Femme Lookbook</option>
+                    <option value="male">Homme Sartorial</option>
+                    <option value="all">Maison All</option>
                   </select>
                 </div>
                 <div>

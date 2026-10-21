@@ -25,6 +25,17 @@ const userSchema = new mongoose.Schema(
       enum: ['customer', 'manager', 'admin'],
       default: 'customer',
     },
+    gender: {
+      type: String,
+      enum: ['female', 'male', 'other', 'all', 'unspecified'],
+      default: 'all',
+    },
+    age: {
+      type: Number,
+      min: 10,
+      max: 120,
+      default: 24,
+    },
     permissions: {
       type: [String],
       default: [],
@@ -32,6 +43,7 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       default: '',
+      trim: true,
     },
     address: {
       street: { type: String, default: '' },

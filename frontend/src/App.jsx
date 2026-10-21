@@ -7,6 +7,7 @@ import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { CartDrawer } from './components/cart/CartDrawer';
 import { CookieBanner } from './components/common/CookieBanner';
+import { BackendStatusBanner } from './components/common/BackendStatusBanner';
 import { usePageMetadata } from './utils/usePageMetadata';
 
 import { HomePage } from './pages/HomePage';
@@ -14,6 +15,7 @@ import { CatalogPage } from './pages/CatalogPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { ManagerDashboardPage } from './pages/ManagerDashboardPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
@@ -21,11 +23,19 @@ import { TermsPage } from './pages/TermsPage';
 import { CreatorPage } from './pages/CreatorPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { LoginNudgePopup } from './components/common/LoginNudgePopup';
 
 import { useLocation } from 'react-router-dom';
+import { pingBackendWakeup } from './utils/api';
 
 function AppContent() {
   usePageMetadata();
+  
+  // Immediately ping Render backend so it warms up without blocking the user
+  React.useEffect(() => {
+    pingBackendWakeup();
+  }, []);
+
   const location = useLocation();
   const isCreatorPage = location.pathname === '/creator';
 
@@ -39,6 +49,7 @@ function AppContent() {
           <Route path="/product/:slug" element={<ProductDetailPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/manager" element={<ManagerDashboardPage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
@@ -51,6 +62,8 @@ function AppContent() {
       {!isCreatorPage && <Footer />}
       <CartDrawer />
       <CookieBanner />
+      <BackendStatusBanner />
+      <LoginNudgePopup />
     </div>
   );
 }

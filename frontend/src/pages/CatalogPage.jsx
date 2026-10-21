@@ -1,11 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { DEMO_CATEGORIES, DEMO_PRODUCTS } from '../data/catalog';
+import { DEMO_CATEGORIES } from '../data/catalog';
 import { ProductCard } from '../components/product/ProductCard';
+import { useCampaigns } from '../context/CampaignContext';
 import { SlidersHorizontal, ArrowUpDown, X, Check, Filter } from 'lucide-react';
 import { Button } from '../components/common/Button';
 
 export const CatalogPage = () => {
+  const { products } = useCampaigns();
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category') || '';
   const searchParam = searchParams.get('q') || '';
@@ -24,12 +26,12 @@ export const CatalogPage = () => {
 
   // Extract unique brands
   const brands = useMemo(() => {
-    return Array.from(new Set(DEMO_PRODUCTS.map((p) => p.brand)));
-  }, []);
+    return Array.from(new Set(products.map((p) => p.brand)));
+  }, [products]);
 
   // Filter & Sort Logic
   const filteredProducts = useMemo(() => {
-    return DEMO_PRODUCTS.filter((product) => {
+    return products.filter((product) => {
       // Search keyword filter
       if (searchParam) {
         const query = searchParam.toLowerCase();

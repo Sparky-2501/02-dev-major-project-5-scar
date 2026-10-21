@@ -13,7 +13,20 @@ export const config = {
   env: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT || '5000', 10),
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
-  mongoUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/scar_ecommerce',
+  mongoUri: (() => {
+    let uri = process.env.MONGODB_URI ? process.env.MONGODB_URI.trim() : '';
+    if (!uri) {
+      // In local development allow localhost fallback, but in production do NOT try localhost
+      return process.env.NODE_ENV === 'production' ? '' : 'mongodb://localhost:27017/scar_ecommerce';
+    }
+    // Ensure database name is present before query parameters for Atlas URIs
+    if (uri.includes('.net/?')) {
+      uri = uri.replace('.net/?', '.net/scar_ecommerce?');
+    } else if (uri.endsWith('.net/')) {
+      uri = `${uri}scar_ecommerce`;
+    }
+    return uri;
+  })(),
   redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET || 'dev_jwt_access_secret_super_secure_key_12345',

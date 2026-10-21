@@ -50,10 +50,12 @@ export const Footer = () => {
       {/* Main Footer Links */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
         <div className="col-span-1 sm:col-span-2">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-brand-orange flex items-center justify-center text-white font-black text-sm">
-              S
-            </div>
+          <div className="flex items-center gap-2.5 mb-4">
+            <img
+              src="/29abd43a-8155-4c06-ba7b-d4524dfc2619.png"
+              alt="SCAR Official Logo"
+              className="w-9 h-9 object-contain rounded-full shadow-sm bg-white dark:bg-scar-800 p-0.5"
+            />
             <span className="text-2xl font-black tracking-tighter text-white">
               SCAR<span className="text-brand-orange">.</span>
             </span>
